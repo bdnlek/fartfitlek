@@ -12,7 +12,9 @@ function loadActivities() {
 					$("#fileList").append("<option value='" + index + "'>" + fileName + "</option>");
 				});
 				$('#fileList').on('selectmenuchange', function(event,ui){
+					removeMap();
 					loadAvailableMetrics($('#fileList').val());
+					addLoadMapToggle($('#fileList').val());
 				});
 				$("#fileList").selectmenu("refresh");
 				$("#metrics").selectmenu();
@@ -22,204 +24,178 @@ function loadActivities() {
 		});
 };
 
+function cleanMetrics(metrics) {
+	var badMetrics = ['LONG','LAT','Pavg36000','','P','Pavg10','Pavg60','Pavg120'];
+	var cleanedMetrics = [];
+	$(metrics).each(function(index,value){
+		if(!contains(badMetrics,value)) {
+			cleanedMetrics.push(value);
+		}
+	});
+	return cleanedMetrics;
+}
+
+function loadAllTimeSeries(activityIndex, metrics) {
+
+	
+	var metricMap = {};
+	var cleanedMetrics = cleanMetrics(metrics);
+	
+	$(cleanedMetrics).each(function(index, metric) {
+		var cleanedMetricsCount = cleanedMetrics.length;
+		$.get("/rest/activities/" + activityIndex + "/" + metric,
+				function(data) {
+					metricMap[metric] = data;
+					var metricMapSize = Object.keys(metricMap).length;
+					if(metricMapSize == cleanedMetricsCount) {
+						drawTimeSeriesMap(metricMap);
+					}
+				}
+		)
+	});
+}
+
+function drawTimeSeriesMap(map) {
+	var timeSeriesContainer = $("#timeSeriesContainer");
+	timeSeriesContainer.empty();
+	timeSeriesContainer.append($("<div>").attr("id","allTimeSeries"));
+	var data = [];
+	var layout = {
+			legend: {traceorder: 'reversed'},
+	};
+	var i = 0;
+	$.each(map,function(index, metricMapEntry) {
+		var xValues = metricMapEntry['x'];
+		var yValues = metricMapEntry['y'];
+		var trace = {
+				x: xValues,
+				y: yValues,
+				type: 'scatter',
+				yaxis: 'y' + i,
+				title: metricMapEntry['name'],
+		};
+		data.push(trace);
+		layout['yaxis' + i] = {
+				domain: [metricMapEntry['min'], metricMapEntry['max']],
+				title: metricMapEntry['name'],
+				overlaying: 'y' + (i-1)
+		};
+		i++;
+	});
+	Plotly.newPlot('allTimeSeries', data, layout);
+}
+
+
 function loadAvailableMetrics(activityIndex) {
 		var timeSeriesContainer = $("#timeSeriesContainer");
 		timeSeriesContainer.empty();
-		timeSeriesContainer.append($("<div>").attr("id","timeSeries"));
+		timeSeriesContainer.append($("<div>").attr("id","powerTimeSeries"));
+		timeSeriesContainer.append($("<div>").attr("id","nonPowerTimeSeries"));
 		// remove existing checkboxes
 		$("#metricsCheckboxes label").each(function(index,option){
 			$(option).remove();
 		});
 		$.get("/rest/activities/" + activityIndex + "/metrics",
 				function(data) {
+					loadAllTimeSeries(activityIndex,data);
+					/*
 					$(data).each(function(index, value){
-						if(value != "" && value!="LONG" && value!="LAT") {
-							addTimeSeriesCheckBox(activityIndex, value);
+						if(value != "" && value!="LONG" && value!="LAT" && value.substring(0,1) != 'P') {
+							addTimeSeriesCheckBox('nonPowerTimeSeries', activityIndex, value);
+						} else if (value == 'P') {
+							addTimeSeriesCheckBox('powerTimeSeries', activityIndex, value);
 						}
 					});
 					if(contains(data,"LONG") && contains(data,"LAT")) {
-						loadMap(activityIndex);
+						addLoadMapToggle(activityIndex);
 					}
+					*/
 				}
 		).fail(function(jqXHR, textStatus, errorThrown){
 			alert("error retrieving metrics for activity nr. " + activityIndex + ": " + textStatus + " in response: \n" + jqXHR.responseText);
-            console.log('jqXHR:');
-            console.log(jqXHR);
-            console.log('textStatus:');
-            console.log(textStatus);
-            console.log('errorThrown:');
-            console.log(errorThrown);
+            console.log('jqXHR:' + jqXHR);
+            console.log('textStatus:' + textStatus);
+            console.log('errorThrown:' + errorThrown);
 		})
 		
 }
 
-function loadMap(activityIndex) {
-	var longitudes, lattitudes;
-	var long_done=false;
-	var lat_done=false;
-	$.get("/rest/activities/" + activityIndex + "/LONG",
-			function(data) {
-				longitudes = data;
-				long_done = true;
-				if(lat_done == true && long_done == true) {
-					drawMap(lattitudes, longitudes);
-				}
-			}
-	)
-	$.get("/rest/activities/" + activityIndex + "/LAT",
-			function(data) {
-				lattitudes = data;
-				lat_done = true;
-				if(lat_done == true && long_done == true) {
-					drawMap(lattitudes, longitudes);
-				}
-			}
-	)
-}
-
-function drawMap(lattitudes, longitudes) {
-	// Where you want to render the map.
-	var element = document.getElementById('mapid');
-
-	// Height has to be set. You can do this in CSS too.
-	// element.style = 'height:300px;';
-
-	// Create Leaflet map on map element.
-	var map = L.map(element);
-
-	// Add OSM tile leayer to the Leaflet map.
-	L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-	    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-	}).addTo(map);
-
-	// Target's GPS coordinates.
-	var target = L.latLng(longitudes.y[0], lattitudes.y[0]);
-
-	// Set map's center to target with zoom 10.
-	map.setView(target, 10);
-
-	// Place a marker on the same location.
-	L.marker(target).addTo(map);
-	var coordinates = [];
-	for(var i = 0; i < lattitudes.y.length; i++) {
-		coordinates.push([longitudes.y[i], lattitudes.y[i]]);
-	}
-	var polygon = L.polygon(coordinates).addTo(map);
-}
-
-// no longer used
-function drawPlotlyMap(lattitudes, longitudes) {
-	
-		  var data = [{
-		      type: 'scattergeo',
-		      lon: lattitudes.y,
-		      lat: longitudes.y,
-		      mode: 'lines',
-		      line:{
-		          width: 2,
-		          color: 'blue'
-		      }
-		    }];
-
-		  var layout = {
-			title: 'map',
-			showlegend: false,
-			geo1: {
-			    resolution: 50,
-			    showland: true,
-			    showlakes: true,
-			    landcolor: 'rgb(204, 204, 204)',
-			    countrycolor: 'rgb(204, 204, 204)',
-			    lakecolor: 'rgb(255, 255, 255)',
-			    projection: {
-			      type: 'equirectangular'
-			    },
-			    coastlinewidth: 2,
-			    lataxis: {
-			      range: [ 48, 52 ],
-			      showgrid: true,
-			      tickmode: 'linear',
-			      dtick: 10
-			    },
-			    lonaxis:{
-			      range: [-10, 20],
-			      showgrid: true,
-			      tickmode: 'linear',
-			      dtick: 20
-			    }
-			  },
-			geo:{
-			    scope: 'west europe',
-			projection: {
-			    type: 'azimuthal equal area'
-			},
-			showland: true,
-			landcolor: 'rgb(243,243,243)',
-			countrycolor: 'rgb(204,204,204)'
-			}
-		  };
-
-		    Plotly.newPlot('map', data, layout);
-};
-
-function loadTimeSeries(fileIndex, metric) {
+function drawTimeSeries(container, fileIndex, metric) {
 	$.get("/rest/activities/" + fileIndex + "/" + metric,
 			function(data){
-				var plotDiv = document.getElementById('timeSeries');
+				var plotDiv = document.getElementById(container);
 				var plotData = plotDiv.data;
+				var min = Math.round(data.min);
+				var max = Math.round(data.max);
+				var trace = {
+						x: data["x"],
+						y: data["y"],
+						type: 'scatter',
+						name: metric,
+						yaxis: 'y0'
+				}
+				var y_layout = {
+						// linewidth: 6,
+						visible: true,
+						range: [min,max],
+						type: 'linear',
+						title: metric,
+						spikemode: 'toaxis+across+marker',
+						tickvals: [min,max],
+						ticktext: [min,max],
+						anchor: 'free'
+				};
 				if(plotData != undefined) {
-					var trace = {
-							x: data["x"],
-							y: data["y"]
-					}
-					Plotly.addTraces('timeSeries',[trace]);
+					var count = plotData.length;
+					trace['yaxis'] = 'y' + count;
+					
+					var layout = {};
+					layout['yaxis' + count] = y_layout;
+					layout['yaxis' + count]['side'] = 'right';
+				    layout['yaxis' + count]['overlaying'] = 'y' + (count - 1);
+					layout['yaxis' + count]['position'] = (1 - (count * 0.1));
+					
+					Plotly.update(container,{},layout);
+					Plotly.addTraces(container,trace);
 				} else {
-					var trace = {
-							x: data["x"],
-							y: data["y"],
-							type: 'scatter'
-					}
 					var layout = {
-							  title: 'Time Series with Rangeslider',
+							  title: container,
+							  autosize: false,
 							  xaxis: {
-							    autorange: true,
-							    // range: ['2015-02-17', '2017-02-16'],
-							    rangeselector: {buttons: [
-							        {
-							          count: 1,
-							          label: '1m',
-							          step: 'month',
-							          stepmode: 'backward'
-							        },
-							        {
-							          count: 6,
-							          label: '6m',
-							          step: 'month',
-							          stepmode: 'backward'
-							        },
-							        {step: 'all'}
-							      ]},
-							    // rangeslider: {range: ['2015-02-17', '2017-02-16']},
-							    type: 'date'
+							    // autorange: true,
+							    type: 'seconds',
+							    // linewidth: 6
 							  },
-							  yaxis: {
-							    autorange: true,
-							    range: [86.8700008333, 138.870004167],
-							    type: 'linear'
+							  // width: 1000,
+							  height: 250,
+							  // paper_bgcolor: '#7f7f7f',
+							  plot_bgcolor: '#c7c7c7',
+							  margin: {
+								  l: 50,
+								  r: 50,
+								  t: 50,
+								  b: 50
+							  },
+
+							  showlegend: true,
+							  legend: {
+								  "orientation": "h",
+								  margin: {
+									  t: 50,
+									  b: 50
+								  }
 							  }
 							};
-					Plotly.newPlot('timeSeries', [trace], layout);					
+					layout['yaxis'] = y_layout;
+					Plotly.newPlot(container, [trace], layout);					
 				}
 				
 		
 	}).fail(function(jqXHR, textStatus, errorThrown){
 		alert("error retrieving timeSeries " + metric + " for activity nr. " + fileIndex + ": " + textStatus + " in response: \n" + jqXHR.responseText);
-        console.log('jqXHR:');
-        console.log(jqXHR);
-        console.log('textStatus:');
-        console.log(textStatus);
-        console.log('errorThrown:');
-        console.log(errorThrown);
+        console.log('jqXHR: ' + jqXHR);
+        console.log('textStatus: ' + textStatus);
+        console.log('errorThrown: ' + errorThrown);
 	});
 }
 
@@ -262,7 +238,7 @@ function uploadFile(fileInput) {
     });
 }
 
-function addTimeSeriesCheckBox(activityIndex, metric) {
+function addTimeSeriesCheckBox(container, activityIndex, metric) {
 	var label = $("<label>");
 	var checkbox = $("<input type='checkbox'>");
 	label.append(checkbox);
@@ -276,7 +252,7 @@ function addTimeSeriesCheckBox(activityIndex, metric) {
 	$("#metricsCheckboxes").append(label);
 	checkbox.change(function() {
 		if($(this).is(":checked")) {
-			loadTimeSeries(activityIndex, $(this).attr('name'));
+			drawTimeSeries(container, activityIndex, $(this).attr('name'));
 		} else {
 			removeTimeSeries($(this).attr('name'));
 		}
