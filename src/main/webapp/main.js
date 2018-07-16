@@ -3,14 +3,16 @@ function loadActivities() {
 		$("#fileUploadButton").button();
 		$.get("rest/activities",
 			function(data) {
-				var nrOfFiles = data.fileNames.length;
+				var nrOfFiles = data.length;
 				$("#fileList option").each(function(index,option){
 					$(option).remove();
 				});
 				$("#fileList").append("<option value=''>Choose one of " + nrOfFiles + " files</option>");
-				$(data.fileNames).each(function(index, fileName){
-					$("#fileList").append("<option value='" + index + "'>" + fileName + "</option>");
-				});
+				for(var i = 0; i < nrOfFiles; i++) {
+					var fitWrapper = data[i];
+					
+					$("#fileList").append("<option value='" + fitWrapper.file_id + "'>" + fitWrapper.name + "</option>");
+				};
 				$('#fileList').on('selectmenuchange', function(event,ui){
 					removeMap();
 					loadAvailableMetrics($('#fileList').val());
