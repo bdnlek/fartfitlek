@@ -15,6 +15,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
+import org.eclipse.persistence.jpa.PersistenceProvider;
+
 import be.bdnlek.fitlek.model.FitWrapper;
 
 public class FitDBRepository implements IFitRepository {
@@ -35,7 +37,7 @@ public class FitDBRepository implements IFitRepository {
 		LOG.info(String.format("dbvendor:%s;userName:%s;password:%s;host:%s;port:%s;databaseName:%s;", dbVendor,
 				userName, password, host, port, databaseName));
 		Map<String, String> properties = new HashMap<String, String>();
-
+		properties.put("javax.persistence.provider", "org.eclipse.persistence.jpa.PersistenceProvider");
 		switch (dbVendor) {
 		case "postgres":
 			// String jdbcUrl =
@@ -67,7 +69,12 @@ public class FitDBRepository implements IFitRepository {
 		}
 		LOG.info("creating EntityManagerFactory for persistenceUnit " + persistenceUnit + " and properties: "
 				+ properties);
+		LOG.info("PersistenceProvider: "
+				+ PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
 		EMF = Persistence.createEntityManagerFactory(persistenceUnit, properties);
+
+		LOG.info(EMF.getProperties().toString());
+
 	}
 
 	public FitDBRepository(String persistenceUnit) throws FitException {
