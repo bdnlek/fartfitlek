@@ -22,15 +22,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.garmin.fit.ActivityType;
 
-import be.bdnlek.fitlek.FitException;
-import be.bdnlek.fitlek.FitFSRepository;
+import be.bdnlek.fitlek.ActivityException;
 import be.bdnlek.fitlek.ActivityFactory;
 import be.bdnlek.fitlek.FitDBRepository;
-import be.bdnlek.fitlek.ActivityException;
+import be.bdnlek.fitlek.FitException;
 import be.bdnlek.fitlek.IFitRepository;
 import be.bdnlek.fitlek.Listener;
 import be.bdnlek.fitlek.model.Activity;
-import be.bdnlek.fitlek.model.FileList;
+import be.bdnlek.fitlek.model.FitWrapper;
 import be.bdnlek.fitlek.model.TimeSeries;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,16 +48,16 @@ public class ActivityResource {
 			throw new ActivityException(e);
 		}
 	}
-	
+
 	@ApiOperation(value = "Finds all Activities")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
-	public FileList getActivities() {
+	public List<FitWrapper> getActivities() throws FitException {
 		LOGGER.info("-->");
-		List<String> fits = repo.getFits();
+		List<FitWrapper> fits = repo.getFitWrappers();
 		LOGGER.info("<--");
 
-		return new FileList(fits);
+		return fits;
 	}
 
 	@Path("/{id}/{timeSeries}")

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import be.bdnlek.fitlek.model.FitWrapper;
+
 public class FitFSRepository implements IFitRepository {
 
 	private static Logger LOGGER = Logger.getLogger(FitFSRepository.class.getName());
@@ -37,15 +39,11 @@ public class FitFSRepository implements IFitRepository {
 		}
 	}
 
-/*	public List<File> getFitFiles() {
-		List<File> files = new ArrayList<File>();
-		for (String fileName : repositoryDir.list()) {
-			files.add(new File(repositoryDir, fileName));
-		}
-		files.sort(null);
-		return files;
-	}
-*/
+	/*
+	 * public List<File> getFitFiles() { List<File> files = new ArrayList<File>();
+	 * for (String fileName : repositoryDir.list()) { files.add(new
+	 * File(repositoryDir, fileName)); } files.sort(null); return files; }
+	 */
 	public List<String> getFits() {
 		List<String> fileNames = new ArrayList<String>();
 		List<File> files = new ArrayList<File>();
@@ -80,6 +78,26 @@ public class FitFSRepository implements IFitRepository {
 			return fit;
 		}
 		return null;
+	}
+
+	@Override
+	public List<FitWrapper> getFitWrappers() throws FitException {
+		List<FitWrapper> fitWrappers = new ArrayList<FitWrapper>();
+
+		for (String fileName : repositoryDir.list()) {
+			FitWrapper fw = new FitWrapper();
+			File f = new File(fileName);
+			try {
+				fw.setFile(f);
+			} catch (IOException e) {
+				throw new FitException(e.getMessage(), e);
+			}
+			fw.setName(fileName);
+			fw.setOwner("");
+			fitWrappers.add(fw);
+		}
+
+		return fitWrappers;
 	}
 
 }

@@ -11,9 +11,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.io.IOUtils;
 
+@XmlRootElement
 @Entity
 @Table
 public class FitWrapper {
@@ -21,16 +24,15 @@ public class FitWrapper {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int file_id;
-	
+
 	@Lob
 	private byte[] file = null;
 	private String name = null;
 	private String owner = null;
-	
+
 	public FitWrapper() {
 		super();
 	}
-	
 
 	public int getFile_id() {
 		return file_id;
@@ -40,6 +42,7 @@ public class FitWrapper {
 		this.file_id = file_id;
 	}
 
+	@XmlTransient
 	public byte[] getFile() {
 		return file;
 	}
@@ -68,12 +71,12 @@ public class FitWrapper {
 	@Override
 	public String toString() {
 		Integer length = null;
-		
-		if(file != null) {
+
+		if (file != null) {
 			length = file.length;
 		}
-		
+
 		return "FitWrapper [fit_id=" + file_id + ", name=" + name + ", owner=" + owner + "], " + length + " bytes.";
 	}
-	
+
 }
