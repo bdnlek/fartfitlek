@@ -41,7 +41,9 @@ public class FitDBRepository implements IFitRepository {
 			// String jdbcUrl =
 			// String.format("jdbc:postgresql://%s:%s/%s?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
 			// host, port, databaseName);
-			String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?sslmode=require", host, port, databaseName);
+			String jdbcUrl = String.format(
+					"jdbc:postgresql://%s:%s/%s?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory", host,
+					port, databaseName);
 			LOG.info("jdbcUrl: " + jdbcUrl);
 			properties.put("javax.persistence.jdbc.url", jdbcUrl);
 			properties.put("javax.persistence.jdbc.user", userName);
