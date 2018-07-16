@@ -58,7 +58,7 @@ public class FitDBRepository implements IFitRepository {
 		default:
 			break;
 		}
-
+		LOG.info("creating EntityManagerFactory for persistenceUnit " + persistenceUnit + " and properties: " + properties);
 		EMF = Persistence.createEntityManagerFactory(persistenceUnit, properties);
 	}
 
