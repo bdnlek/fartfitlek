@@ -23,9 +23,10 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.garmin.fit.ActivityType;
 
 import be.bdnlek.fitlek.FitException;
-import be.bdnlek.fitlek.FitRepository;
-import be.bdnlek.fitlek.FitService;
-import be.bdnlek.fitlek.FitServiceException;
+import be.bdnlek.fitlek.FitFSRepository;
+import be.bdnlek.fitlek.ActivityFactory;
+import be.bdnlek.fitlek.FitDBRepository;
+import be.bdnlek.fitlek.ActivityException;
 import be.bdnlek.fitlek.IFitRepository;
 import be.bdnlek.fitlek.Listener;
 import be.bdnlek.fitlek.model.Activity;
@@ -39,8 +40,16 @@ import io.swagger.annotations.ApiOperation;
 public class ActivityResource {
 
 	private static Logger LOGGER = Logger.getLogger(ActivityResource.class.getName());
-	private IFitRepository repo = new FitRepository("/tmp/fitRepository");
+	private IFitRepository repo;
 
+	public ActivityResource() throws ActivityException {
+		try {
+			repo = new FitDBRepository("fartfitlek");
+		} catch (FitException e) {
+			throw new ActivityException(e);
+		}
+	}
+	
 	@ApiOperation(value = "Finds all Activities")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
@@ -56,9 +65,14 @@ public class ActivityResource {
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.TEXT_XML })
 	public TimeSeries getTimeSeries(@PathParam("id") Integer id, @PathParam("timeSeries") String timeSeries)
-			throws FitServiceException {
+			throws ActivityException {
 
-		FitService svc = new FitService(repo.getFit(id));
+		ActivityFactory svc;
+		try {
+			svc = new ActivityFactory(repo.getFit(id));
+		} catch (FitException e) {
+			throw new ActivityException(e);
+		}
 		TimeSeries ts = svc.getActivity(Listener.SUPPORTED_CLASSES).getResults().getTimeSeries(timeSeries);
 		if (ts != null) {
 			return ts;
@@ -70,8 +84,13 @@ public class ActivityResource {
 	@Path("/{id}/metrics")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	public String[] getMetrics(@PathParam("id") Integer id) throws FitServiceException {
-		FitService svc = new FitService(repo.getFit(id));
+	public String[] getMetrics(@PathParam("id") Integer id) throws ActivityException {
+		ActivityFactory svc;
+		try {
+			svc = new ActivityFactory(repo.getFit(id));
+		} catch (FitException e) {
+			throw new ActivityException(e);
+		}
 		return svc.getActivity(Listener.SUPPORTED_CLASSES).getResults().getTimeSeries();
 	}
 
@@ -98,16 +117,16 @@ public class ActivityResource {
 
 				e.printStackTrace();
 			}
-			FitService svc = new FitService(f);
+			ActivityFactory svc = new ActivityFactory(f);
 			Activity activity = svc.getActivity();
 			if (activity == null
 					|| activity.getActivity().equals(ActivityType.getStringFromValue(ActivityType.CYCLING))) {
-				throw new FitServiceException("activity is null or not cycling ");
+				throw new ActivityException("activity is null or not cycling ");
 			} else {
 				repo.addFitFile(f, fileName);
 			}
 
-		} catch (IOException | FitServiceException e) {
+		} catch (IOException | ActivityException e) {
 			throw new FitException("error at upload", e);
 		}
 

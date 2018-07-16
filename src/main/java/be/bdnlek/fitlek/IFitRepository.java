@@ -9,8 +9,8 @@ public interface IFitRepository {
 
 	public List<String> getFits();
 
-	public List<File> getFitFiles();
+	// public List<File> getFitFiles();
 
-	public File getFit(Integer id);
+	public File getFit(Integer id) throws FitException;
 
 }

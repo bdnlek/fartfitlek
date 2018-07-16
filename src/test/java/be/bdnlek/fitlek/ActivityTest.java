@@ -22,14 +22,14 @@ import be.bdnlek.fitlek.model.Activity;
 public class ActivityTest {
 
 	@Test
-	public void toXml() throws JAXBException, URISyntaxException, FitServiceException, JsonGenerationException,
+	public void toXml() throws JAXBException, URISyntaxException, ActivityException, JsonGenerationException,
 			JsonMappingException, IOException {
 		URL url = this.getClass().getClassLoader().getResource("2016-01-01-12-38-21.fit");
 		if (url == null) {
 			fail("fitfile could not be found");
 		}
 		File file = new File(new URI(url.toString()));
-		FitService svc = new FitService(file);
+		ActivityFactory svc = new ActivityFactory(file);
 		XmlMapper mapper = new XmlMapper();
 		Activity a = svc.getActivity();
 		mapper.writeValue(System.out, a);
@@ -41,14 +41,14 @@ public class ActivityTest {
 		 */ }
 
 	@Test
-	public void toJson() throws JAXBException, URISyntaxException, FitServiceException, JsonGenerationException,
+	public void toJson() throws JAXBException, URISyntaxException, ActivityException, JsonGenerationException,
 			JsonMappingException, IOException {
 		URL url = this.getClass().getClassLoader().getResource("2016-01-01-12-38-21.fit");
 		if (url == null) {
 			fail("fitfile could not be found");
 		}
 		File file = new File(new URI(url.toString()));
-		FitService svc = new FitService(file);
+		ActivityFactory svc = new ActivityFactory(file);
 		ObjectMapper mapper = new ObjectMapper();
 		Activity a = svc.getActivity(Listener.SUPPORTED_CLASSES);
 		mapper.writeValue(System.out, a);

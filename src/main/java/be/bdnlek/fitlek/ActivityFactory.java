@@ -19,7 +19,14 @@ import com.garmin.fit.RecordMesg;
 import be.bdnlek.fitlek.model.Activity;
 import be.bdnlek.fitlek.model.Results;
 
-public class FitService {
+/**
+ * For a given File that follows the fit-specification, this service constructs an Activity-instance.
+ * 
+ * @author bdenys
+ *
+ */
+
+public class ActivityFactory {
 
 	public static Logger LOGGER = Logger.getLogger(Thread.currentThread().getStackTrace()[0].getClassName());
 
@@ -58,16 +65,24 @@ public class FitService {
 		METRICS.put("LONG", RecordMesg.PositionLatFieldNum);
 	}
 
-	public FitService(File fitFile) throws FitServiceException {
+	/**
+	 * 
+	 * @param fitFile
+	 * 			a file that is supposed to adhere to the fit-specification (having an extension ".fit").
+	 * 
+	 * @throws ActivityException
+	 */
+	
+	public ActivityFactory(File fitFile) throws ActivityException {
 		if (fitFile == null || !fitFile.exists() || !fitFile.canRead()) {
-			throw new FitServiceException("no fitFile specified (null)");
+			throw new ActivityException("no fitFile specified (null)");
 		}
 		LOGGER.info("file: " + fitFile.getAbsolutePath());
 		if (!fitFile.exists() || !fitFile.canRead()) {
-			throw new FitServiceException("fitFile does not exist: " + fitFile.getAbsolutePath());
+			throw new ActivityException("fitFile does not exist: " + fitFile.getAbsolutePath());
 		}
 		if (!fitFile.canRead()) {
-			throw new FitServiceException("fitFile is not Readable: " + fitFile.getAbsolutePath());
+			throw new ActivityException("fitFile is not Readable: " + fitFile.getAbsolutePath());
 		}
 
 		this.fitFile = fitFile;
@@ -75,12 +90,12 @@ public class FitService {
 	}
 
 	private Activity parseFile(MesgBroadcaster broadcaster, Decode decoder, Listener listener)
-			throws FitServiceException {
+			throws ActivityException {
 		FileInputStream fis;
 		try {
 			fis = new FileInputStream(fitFile);
 		} catch (FileNotFoundException e) {
-			throw new FitServiceException(e);
+			throw new ActivityException(e);
 		}
 
 		Boolean successfull = false;
@@ -99,12 +114,12 @@ public class FitService {
 		if (successfull) {
 			return listener.getActivity();
 		} else {
-			throw new FitServiceException("parsing the fitFile was NOT successfull");
+			throw new ActivityException("parsing the fitFile was NOT successfull");
 		}
 
 	}
 
-	public Activity getActivity(Class<? extends Mesg>... messages) throws FitServiceException {
+	public Activity getActivity(Class<? extends Mesg>... messages) throws ActivityException {
 
 		List<Class<? extends Mesg>> messagesList = Arrays.asList(messages);
 
@@ -112,7 +127,7 @@ public class FitService {
 		try {
 			listener = new Listener(METRICS, INTERVALS, messagesList);
 		} catch (ListenerException e) {
-			throw new FitServiceException(e);
+			throw new ActivityException(e);
 		}
 
 		Decode decoder;

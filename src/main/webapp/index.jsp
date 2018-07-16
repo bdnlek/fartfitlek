@@ -44,7 +44,10 @@
 </body>
 <footer>
 	<p>
-		<a href="rest/activities">List of activities</a> | <a href="rest/activities/0/metrics">metrics of activity 0</a>  | <a href="rest/activities/0/HR">metric HR of activity 0</a> | <a href="#" onclick="javascript:useCaseDoubleYAxis();">timeSeries</a>
+		<a href="rest/activities">List of activities</a> | 
+		<a href="rest/activities/0/metrics">metrics of activity 0</a>  | 
+		<a href="rest/activities/0/HR">metric HR of activity 0</a> | 
+		<a href="#" onclick="javascript:useCaseDoubleYAxis();">timeSeries</a>
 	<p>
 </footer>
 </html>

@@ -1,7 +1,7 @@
 function loadActivities() {
 		$("#fileList").selectmenu();
 		$("#fileUploadButton").button();
-		$.get("/rest/activities",
+		$.get("rest/activities",
 			function(data) {
 				var nrOfFiles = data.fileNames.length;
 				$("#fileList option").each(function(index,option){
@@ -43,7 +43,7 @@ function loadAllTimeSeries(activityIndex, metrics) {
 	
 	$(cleanedMetrics).each(function(index, metric) {
 		var cleanedMetricsCount = cleanedMetrics.length;
-		$.get("/rest/activities/" + activityIndex + "/" + metric,
+		$.get("rest/activities/" + activityIndex + "/" + metric,
 				function(data) {
 					metricMap[metric] = data;
 					var metricMapSize = Object.keys(metricMap).length;
@@ -95,7 +95,7 @@ function loadAvailableMetrics(activityIndex) {
 		$("#metricsCheckboxes label").each(function(index,option){
 			$(option).remove();
 		});
-		$.get("/rest/activities/" + activityIndex + "/metrics",
+		$.get("rest/activities/" + activityIndex + "/metrics",
 				function(data) {
 					loadAllTimeSeries(activityIndex,data);
 					/*
@@ -121,7 +121,7 @@ function loadAvailableMetrics(activityIndex) {
 }
 
 function drawTimeSeries(container, fileIndex, metric) {
-	$.get("/rest/activities/" + fileIndex + "/" + metric,
+	$.get("rest/activities/" + fileIndex + "/" + metric,
 			function(data){
 				var plotDiv = document.getElementById(container);
 				var plotData = plotDiv.data;

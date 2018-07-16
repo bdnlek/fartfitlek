@@ -295,11 +295,11 @@ public class Listener implements MesgListener, DeveloperFieldDescriptionListener
 		return device;
 	}
 
-	public <T extends MesgListener> T as(Class<T> T) throws FitServiceException {
+	public <T extends MesgListener> T as(Class<T> T) throws ActivityException {
 		if (T.isInstance(this)) {
 			return (T) this;
 		} else {
-			throw new FitServiceException("cannot cast listener to " + T.getName());
+			throw new ActivityException("cannot cast listener to " + T.getName());
 		}
 	}
 

@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class FitRepository implements IFitRepository {
+public class FitFSRepository implements IFitRepository {
 
-	private static Logger LOGGER = Logger.getLogger(FitRepository.class.getName());
+	private static Logger LOGGER = Logger.getLogger(FitFSRepository.class.getName());
 	private File repositoryDir = null;
 
-	public FitRepository(String directoryName) {
+	public FitFSRepository(String directoryName) {
 		File dir = new File(directoryName);
 		if (!dir.exists()) {
 			dir.mkdirs();
@@ -37,7 +37,7 @@ public class FitRepository implements IFitRepository {
 		}
 	}
 
-	public List<File> getFitFiles() {
+/*	public List<File> getFitFiles() {
 		List<File> files = new ArrayList<File>();
 		for (String fileName : repositoryDir.list()) {
 			files.add(new File(repositoryDir, fileName));
@@ -45,7 +45,7 @@ public class FitRepository implements IFitRepository {
 		files.sort(null);
 		return files;
 	}
-
+*/
 	public List<String> getFits() {
 		List<String> fileNames = new ArrayList<String>();
 		List<File> files = new ArrayList<File>();

@@ -5,7 +5,7 @@ function loadMap(activityIndex) {
 	var lat_done=false;
 	$('#mapContainer').append($('<div>').attr('id','mapId').attr('style','height: 100%'));
 
-	$.get("/rest/activities/" + activityIndex + "/LONG",
+	$.get("rest/activities/" + activityIndex + "/LONG",
 			function(data) {
 				longitudes = data;
 				long_done = true;
@@ -14,7 +14,7 @@ function loadMap(activityIndex) {
 				}
 			}
 	)
-	$.get("/rest/activities/" + activityIndex + "/LAT",
+	$.get("rest/activities/" + activityIndex + "/LAT",
 			function(data) {
 				lattitudes = data;
 				lat_done = true;
