@@ -38,6 +38,7 @@ public class FitDBRepository implements IFitRepository {
 				userName, password, host, port, databaseName));
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("javax.persistence.provider", "org.eclipse.persistence.jpa.PersistenceProvider");
+		properties.put("eclipselink.logging.level", "FINE");
 		switch (dbVendor) {
 		case "postgres":
 			// String jdbcUrl =
@@ -73,7 +74,7 @@ public class FitDBRepository implements IFitRepository {
 				+ PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
 		EMF = Persistence.createEntityManagerFactory(persistenceUnit, properties);
 
-		LOG.info(EMF.getProperties().toString());
+		LOG.info("EMF: " + EMF + "\n" + EMF.getProperties().toString());
 
 	}
 
