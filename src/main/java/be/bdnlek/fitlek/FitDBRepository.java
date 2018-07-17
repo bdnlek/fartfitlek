@@ -89,7 +89,7 @@ public class FitDBRepository implements IFitRepository {
 	}
 
 	@Override
-	public void addFitFile(File file, String fileName) throws FitException {
+	public FitWrapper addFit(File file, String fileName) throws FitException {
 		EntityManager em = EMF.createEntityManager();
 
 		FitWrapper fitWrapper = new FitWrapper();
@@ -105,7 +105,7 @@ public class FitDBRepository implements IFitRepository {
 		} finally {
 			em.close();
 		}
-
+		return fitWrapper;
 	}
 
 	@Override
@@ -141,33 +141,32 @@ public class FitDBRepository implements IFitRepository {
 
 		EntityManager em = EMF.createEntityManager();
 
-		Query q = em.createQuery("select x from FitWrapper x where x.file_id = " + id);
-		List<FitWrapper> list = (List<FitWrapper>) q.getResultList();
-		int size = list.size();
-		LOG.info("There are " + size + " fit-files with id=" + id);
-		if (list.size() == 0) {
-			em.close();
+		FitWrapper fw = em.find(FitWrapper.class, id);
+
+		File tempFile;
+
+		if (fw == null)
 			return null;
-		} else if (list.size() == 1) {
-			File tempFile;
+
+		try {
+			tempFile = File.createTempFile("tempFile", ".fit");
+			FileOutputStream fos = new FileOutputStream(tempFile);
 			try {
-				tempFile = File.createTempFile("tempFile", ".fit");
-				FileOutputStream fos = new FileOutputStream(tempFile);
-				try {
-					fos.write(list.get(0).getFile());
-				} finally {
-					fos.close();
-					em.close();
-				}
-			} catch (IOException e) {
-				throw new FitException("could not create temporary file", e);
+				fos.write(fw.getFile());
+			} finally {
+				fos.close();
+				em.close();
 			}
-			return tempFile;
-		} else {
-			em.close();
-			throw new FitException("at most one fit file with id = " + id + " should exist instead of " + list.size(),
-					null);
+		} catch (IOException e) {
+			throw new FitException("could not create temporary file", e);
 		}
+		return tempFile;
+
+	}
+
+	@Override
+	public void deleteFit(Integer id) throws FitException {
+		EntityManager em = EMF.createEntityManager();
 
 	}
 

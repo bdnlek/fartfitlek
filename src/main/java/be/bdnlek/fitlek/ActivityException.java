@@ -15,4 +15,8 @@ public class ActivityException extends Exception {
 		super(msg);
 	}
 
+	public ActivityException(String msg, FitException e) {
+		super(msg, e);
+	}
+
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -40,6 +41,7 @@ public class ActivityResource {
 
 	private static Logger LOGGER = Logger.getLogger(ActivityResource.class.getName());
 	private IFitRepository repo;
+	private ActivityFactory activityFac;
 
 	public ActivityResource() throws ActivityException {
 		try {
@@ -66,17 +68,26 @@ public class ActivityResource {
 	public TimeSeries getTimeSeries(@PathParam("id") Integer id, @PathParam("timeSeries") String timeSeries)
 			throws ActivityException {
 
-		ActivityFactory svc;
 		try {
-			svc = new ActivityFactory(repo.getFit(id));
+			activityFac = new ActivityFactory(repo.getFit(id));
 		} catch (FitException e) {
 			throw new ActivityException(e);
 		}
-		TimeSeries ts = svc.getActivity(Listener.SUPPORTED_CLASSES).getResults().getTimeSeries(timeSeries);
+		TimeSeries ts = activityFac.getActivity(Listener.SUPPORTED_CLASSES).getResults().getTimeSeries(timeSeries);
 		if (ts != null) {
 			return ts;
 		} else {
 			throw new NotFoundException();
+		}
+	}
+
+	@Path("/{id}")
+	@DELETE
+	public void deleteFit(@PathParam("id") Integer id) throws ActivityException {
+		try {
+			repo.deleteFit(id);
+		} catch (FitException e) {
+			throw new ActivityException("Could not delete Fit-file with id=" + id, e);
 		}
 	}
 
@@ -122,7 +133,7 @@ public class ActivityResource {
 					|| activity.getActivity().equals(ActivityType.getStringFromValue(ActivityType.CYCLING))) {
 				throw new ActivityException("activity is null or not cycling ");
 			} else {
-				repo.addFitFile(f, fileName);
+				repo.addFit(f, fileName);
 			}
 
 		} catch (IOException | ActivityException e) {
