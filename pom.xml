@@ -211,7 +211,7 @@
 		<slf4j.version>1.7.25</slf4j.version>
 		<webapp-runner.version>8.5.23.1</webapp-runner.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jackson.version>[2.8.11.1,)</jackson.version>
+		<jackson.version>2.9.8</jackson.version>
 		<eclipselink.version>2.6.0</eclipselink.version>
 	</properties>
 </project>
