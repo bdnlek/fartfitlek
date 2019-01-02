@@ -63,25 +63,43 @@ function drawTimeSeriesMap(map) {
 	timeSeriesContainer.append($("<div>").attr("id","allTimeSeries"));
 	var data = [];
 	var layout = {
-			legend: {traceorder: 'reversed'},
+//			legend: {traceorder: 'reversed'},
 	};
 	var i = 0;
 	$.each(map,function(index, metricMapEntry) {
+		var j = "";
+		if(i > 0) {
+			j = i + 1;
+		}
 		var xValues = metricMapEntry['x'];
 		var yValues = metricMapEntry['y'];
 		var trace = {
 				x: xValues,
 				y: yValues,
 				type: 'scatter',
-				yaxis: 'y' + i,
-				title: metricMapEntry['name'],
+				yaxis: 'y' + j,
+				name: metricMapEntry['name'],
 		};
 		data.push(trace);
-		layout['yaxis' + i] = {
-				domain: [metricMapEntry['min'], metricMapEntry['max']],
-				title: metricMapEntry['name'],
-				overlaying: 'y' + (i-1)
-		};
+		var overlayingValue = "";
+		if(i == 0) {
+			layout['yaxis' + j] = {
+					domain: [metricMapEntry['min'], metricMapEntry['max']],
+					title: metricMapEntry['name']
+			};			
+		} else if (i == 1) {
+			layout['yaxis' + j] = {
+					domain: [metricMapEntry['min'], metricMapEntry['max']],
+					title: metricMapEntry['name'],
+					overlaying: 'y'
+			};
+		} else if (i > 1) {
+			layout['yaxis' + j] = {
+					domain: [metricMapEntry['min'], metricMapEntry['max']],
+					title: metricMapEntry['name'],
+					overlaying: "y" + (i - 1)
+			};
+		}
 		i++;
 	});
 	Plotly.newPlot('allTimeSeries', data, layout);
