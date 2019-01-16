@@ -1,3 +1,6 @@
+var positions = new Map();
+var leaflet_map;
+
 function loadActivities() {
 		$("#fileList").selectmenu();
 		$("#fileUploadButton").button();
@@ -64,6 +67,7 @@ function drawTimeSeriesMap(map) {
 	var data = [];
 	var layout = {
 //			legend: {traceorder: 'reversed'},
+			hovermode: 'closest'
 	};
 	var i = 0;
 	$.each(map,function(index, metricMapEntry) {
@@ -103,6 +107,34 @@ function drawTimeSeriesMap(map) {
 		i++;
 	});
 	Plotly.newPlot('allTimeSeries', data, layout);
+	
+	hoverInfo = document.getElementById('hoverinfo');
+	timeSeries = document.getElementById('allTimeSeries');
+	
+	var timeSeriesMarker
+	
+	timeSeries.on('plotly_hover', function(data){
+		var timestamp = data.points[0].x.substring(0,10) + 'T' + data.points[0].x.substring(11);
+	    var infotext = data.points.map(function(d){
+	      return (d.data.name+': x= '+d.x+', y= '+d.y.toPrecision(3) + ' timestamp : ' + positions.get(timestamp)); //.get(d.x));
+	    });
+	    
+	    timeSeriesMarker = L.marker(positions.get(timestamp)).addTo(leaflet_map);
+	    
+	    hoverInfo.innerHTML = infotext.join('<br/>');
+	    
+	    
+	}).on('plotly_unhover', function(data){
+	    hoverInfo.innerHTML = '';
+	    leaflet_map.removeLayer(timeSeriesMarker);
+	}).on('plotly_click', function(data) {
+				var timestamp = data.points[0].x.substring(0,10) + 'T' + data.points[0].x.substring(11);
+	    var infotext = data.points.map(function(d){
+	      return (d.data.name+': x= '+d.x+', y= '+d.y.toPrecision(3) + ' timestamp : ' + positions.get(timestamp)); //.get(d.x));
+	    });
+	    
+	    L.marker(positions.get(timestamp)).addTo(leaflet_map);
+	});
 }
 
 
