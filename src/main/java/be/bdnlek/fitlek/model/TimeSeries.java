@@ -1,5 +1,8 @@
 package be.bdnlek.fitlek.model;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -62,8 +65,9 @@ public class TimeSeries {
 	}
 
 	@XmlElementWrapper(name = "X")
-	public Long[] getX() {
-		return values.keySet().toArray(new Long[] {});
+	public String[] getX() {
+		return values.keySet().stream().map(ts -> LocalDateTime.ofEpochSecond(ts + 631065600, 0, ZoneOffset.UTC)
+				.atZone(ZoneId.of("Europe/Paris")).toString()).toArray(String[]::new);
 	}
 
 	@XmlElement
@@ -101,9 +105,10 @@ public class TimeSeries {
 			}
 			values.put(msgTs, value);
 			if (previousMaxTs != null) {
-				total = total + (value * (msgTs - previousMaxTs));
+				total = total + (values.get(previousMaxTs) * (msgTs - previousMaxTs));
 			}
 		} else {
+			total = 0.0;
 			values.put(msgTs, value);
 		}
 		if (min == null || value < min) {
@@ -134,6 +139,8 @@ public class TimeSeries {
 				Long delta = newFirstKey - ts;
 				total = total - (value * delta);
 			}
+		} else if (values.isEmpty()) {
+			total = 0.0;
 		}
 	}
 
@@ -163,7 +170,8 @@ public class TimeSeries {
 			} else {
 				sb.append(", ");
 			}
-			sb.append(ts + " " + values.get(ts));
+			LocalDateTime dateTime = LocalDateTime.ofEpochSecond(ts + 631065600, 0, ZoneOffset.UTC);
+			sb.append(dateTime + " " + values.get(ts));
 		}
 		return sb.toString();
 	}
