@@ -27,6 +27,7 @@ public class FitDBRepository implements IFitRepository {
 
 	private static void initializeEmf(String databaseUrl, String persistenceUnit) {
 
+		LOG.info("DATABASE_URL: " + databaseUrl);
 		StringTokenizer st = new StringTokenizer(databaseUrl, ":@/");
 		String dbVendor = st.nextToken(); // if DATABASE_URL is set
 		String userName = st.nextToken();
