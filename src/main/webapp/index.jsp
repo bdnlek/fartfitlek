@@ -30,8 +30,10 @@
 	</div>
 	<div id="timeSeriesContainer">
 		<div id="nonPowertimeSeries"></div>
-		<div id="powertimeSeries"></div>	
+		<div id="powertimeSeries"></div>
 	</div>
+	<div id="hoverinfo"></div>
+	<div id="positions"></div>
 	<div id="mapContainer"  style="height: 500px; z-index:10;">
 
 	</div>

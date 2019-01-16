@@ -7,3 +7,13 @@
 #nonPowerTimeSeries {
  	margin: 15px;
 }
+
+#hoverinfo {
+	border: 1px solid red;
+	height: 2em;
+}
+
+#positions {
+	border: 1px solid green;
+	height: 2em;
+}
