@@ -174,13 +174,14 @@ public class Listener implements MesgListener, DeveloperFieldDescriptionListener
 		// if the power is not null, we should proceed to adapt the relative
 		// timeseries which we use to calculate the Pavg<interval> and NP<interval>
 		Double power = activity.getResults().getTimeSeries("P").getValue(msgTs);
-		if (power != null) {
-			try {
-				calculatePowerMetrics(msgTs, power);
-			} catch (ListenerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		if (power == null) {
+			power = 0.0;
+		}
+		try {
+			calculatePowerMetrics(msgTs, power);
+		} catch (ListenerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -210,7 +211,10 @@ public class Listener implements MesgListener, DeveloperFieldDescriptionListener
 
 			// the relative timeseries has been regenerated. Now let's calculate
 			// the averages.
-			Double average = series.getTotal() / interval;
+			Double average = 0.0;
+			if (series.getValues().size() > 1) {
+				average = series.getTotal() / interval;
+			}
 
 			try {
 				activity.getResults().getTimeSeries("Pavg" + interval).addValue(msgTs, average);
